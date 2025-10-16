@@ -6,54 +6,52 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
     public class ArticulosController : ApiController
     {
         // GET: api/Articulos
-        public IEnumerable<string> Get()
+        [HttpGet]
+        public IEnumerable<Articulos> Get()
         {
-            return new string[] { "value1", "value2" };
+            ArticulosNegocio negocio = new ArticulosNegocio();
+            return negocio.Listar();  // Devuelve todos los artículos con marca, categoría e imágenes
         }
 
         // GET: api/Articulos/5
-        public string Get(int id)
+        [HttpGet]
+        public IHttpActionResult Get(int id)
         {
-            return "value";
-        }
+            ArticulosNegocio negocio = new ArticulosNegocio();
+            var articulos = negocio.Listar();
+            var articulo = articulos.Find(a => a.Id == id);
 
-        // POST: api/Articulos
-        public HttpResponseMessage Post([FromBody]ArticulosDto art)
-        {
-            Articulos nuevo = new Articulos();
-            ArticulosNegocio artNeg = new ArticulosNegocio();
-            nuevo.Marca = new Marcas();
-            nuevo.Categoria = new Categorias();
+            if (articulo == null)
+                return NotFound();
 
-            if (string.IsNullOrEmpty(art.Codigo))
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Sin ingreso de codigo prodcuto.");
-
-            nuevo.Codigo = art.Codigo;
-            nuevo.Nombre = art.Nombre;
-            nuevo.Descripcion = art.Descripcion;
-            nuevo.Precio = art.Precio;
-            nuevo.Marca.Id = (int)art.IdMarca;
-            nuevo.Categoria.Id = (int)art.IdCategoria;
-
-            artNeg.Agregar(nuevo);
-            return Request.CreateResponse(HttpStatusCode.OK, "Producto agregado.");
+            return Ok(articulo);
         }
 
         // PUT: api/Articulos/5
-        public void Put(int id, [FromBody]string value)
+        [HttpPut]
+        public IHttpActionResult Put(int id, [FromBody] Articulos articulo)
         {
-        }
+            if (articulo == null)
+                return BadRequest("El cuerpo de la solicitud está vacío.");
 
-        // DELETE: api/Articulos/5
-        public void Delete(int id)
-        {
+            articulo.Id = id;
+            ArticulosNegocio negocio = new ArticulosNegocio();
+
+            try
+            {
+                negocio.Modificar(articulo); 
+                return Ok("Artículo actualizado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
     }
 }
