@@ -84,7 +84,32 @@ namespace WebAPI.Controllers
             try
             {
                 negocio.EliminarFisico(id);
-                return Ok("Artículo eliminado correctamente.");
+                return Ok("Articulo eliminado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        // GET: api/Articulos/buscarPorCodigo/XXXX
+        [HttpGet]
+        [Route("api/Articulos/buscarPorCodigo/{codigo}")]
+        public IHttpActionResult BuscarPorCodigo(string codigo)
+        {
+            // ---- Verificamos que no venga vacio
+            if (string.IsNullOrEmpty(codigo))
+                return BadRequest("Debe ingresar un código de producto.");
+
+            try
+            {
+                ArticulosNegocio negocio = new ArticulosNegocio();
+                var articulo = negocio.BuscarPorCodigo(codigo);
+                // ---- Verificamos si el articulo existe en la base
+                if (articulo == null)
+                    return BadRequest("Articulo inexistente.");
+
+                return Ok(articulo);
             }
             catch (Exception ex)
             {

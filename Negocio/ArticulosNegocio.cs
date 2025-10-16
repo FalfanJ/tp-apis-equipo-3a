@@ -201,6 +201,70 @@ namespace Negocio
                 datosArticulo.CerrarConexion();
             }
         }
+        // ---- Buscar producto por codigo
+        public Articulos BuscarPorCodigo(string codigo)
+        {
+            AccesoDatos datos = new AccesoDatos();
+
+            try
+            {
+                datos.SetearConsulta(@"
+            SELECT a.Id, a.Codigo, a.Nombre, a.Descripcion, a.Precio,
+                   m.Id AS IdMarca, m.Descripcion AS Marca,
+                   c.Id AS IdCategoria, c.Descripcion AS Categoria
+            FROM ARTICULOS a
+            LEFT JOIN MARCAS m ON a.IdMarca = m.Id
+            LEFT JOIN CATEGORIAS c ON a.IdCategoria = c.Id
+            WHERE a.Codigo = @codigo");
+
+                datos.SetearParametro("@codigo", codigo);
+                datos.EjecutarLectura();
+
+                if (datos.Lector.Read())
+                {
+                    // ---- Construimos el articulo
+                    Articulos aux = new Articulos();
+                    aux.Id = (int)datos.Lector["Id"];
+                    aux.Codigo = (string)datos.Lector["Codigo"];
+                    aux.Nombre = (string)datos.Lector["Nombre"];
+                    aux.Descripcion = (string)datos.Lector["Descripcion"];
+                    aux.Precio = (decimal)datos.Lector["Precio"];
+
+                    // --- Marca
+                    if (!(datos.Lector["Marca"] is DBNull))
+                    {
+                        aux.Marca = new Marcas();
+                        aux.Marca.Id = (int)datos.Lector["IdMarca"];
+                        aux.Marca.Marca = (string)datos.Lector["Marca"];
+                    }
+
+                    // --- Categoria
+                    if (!(datos.Lector["Categoria"] is DBNull))
+                    {
+                        aux.Categoria = new Categorias();
+                        aux.Categoria.Id = (int)datos.Lector["IdCategoria"];
+                        aux.Categoria.Descripcion = (string)datos.Lector["Categoria"];
+                    }
+
+                    // ---- Imag
+                    aux.Imagenes = ObtenerImagenes(aux.Id);
+
+                    return aux;
+                }
+
+                // ---- Retornamos null si no encontro nada
+
+                return null; 
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                datos.CerrarConexion();
+            }
+        }
 
     }
 
