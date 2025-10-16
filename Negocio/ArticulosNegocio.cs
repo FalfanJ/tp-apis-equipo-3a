@@ -69,7 +69,7 @@ namespace Negocio
             }
         }
 
-        // 🔹 NUEVO MÉTODO: carga todas las imágenes de un artículo
+        // carga todas las imágenes de un artículo
         private List<Imagenes> ObtenerImagenes(int idArticulo)
         {
             List<Imagenes> lista = new List<Imagenes>();
@@ -100,8 +100,6 @@ namespace Negocio
                 datos.CerrarConexion();
             }
         }
-
-        // 🔹 Dejamos tus otros métodos tal cual
         public void Agregar(Articulos nuevo)
         {
             AccesoDatos datos = new AccesoDatos();

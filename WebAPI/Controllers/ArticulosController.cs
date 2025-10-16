@@ -45,7 +45,7 @@ namespace WebAPI.Controllers
 
             try
             {
-                negocio.Modificar(articulo); // 🔹 no devuelve nada
+                negocio.Modificar(articulo); 
                 return Ok("Artículo actualizado correctamente.");
             }
             catch (Exception ex)
