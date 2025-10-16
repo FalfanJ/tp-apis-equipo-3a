@@ -13,12 +13,19 @@ namespace Negocio
         {
             List<Articulos> lista = new List<Articulos>();
             AccesoDatos datos = new AccesoDatos();
+
             try
             {
-                //datos.SetearConsulta("SELECT a.id, a.Codigo, a.Nombre, a.Descripcion, b.Descripcion AS 'Marca', c.Descripcion AS 'Categoria' , a.Precio FROM ARTICULOS A LEFT JOIN MARCAS B on a.IdMarca = b.Id LEFT JOIN CATEGORIAS C on a.IdCategoria = c.Id");
-                //datos.SetearConsulta("SELECT a.id, a.Codigo, a.Nombre, a.Descripcion, ISNULL(m.Descripcion, 'Marca NO encontrada') AS 'Marca', ISNULL(c.Descripcion, 'Dato NO encontrado') AS 'Categoria' , a.Precio FROM ARTICULOS A LEFT JOIN MARCAS M on a.IdMarca = m.Id LEFT JOIN CATEGORIAS C on a.IdCategoria = c.Id");
-                datos.SetearConsulta("SELECT a.id, a.Codigo, a.Nombre, a.Descripcion, b.Descripcion AS 'Marca', c.Descripcion AS 'Categoria' , a.Precio, b.Id AS 'IdMarca' , c.Id AS 'IdCategoria'  FROM ARTICULOS A LEFT JOIN MARCAS B on a.IdMarca = b.Id LEFT JOIN CATEGORIAS C on a.IdCategoria = c.Id");
+                datos.SetearConsulta(@"
+                    SELECT a.Id, a.Codigo, a.Nombre, a.Descripcion, a.Precio,
+                           m.Id AS IdMarca, m.Descripcion AS Marca,
+                           c.Id AS IdCategoria, c.Descripcion AS Categoria
+                    FROM ARTICULOS a
+                    LEFT JOIN MARCAS m ON a.IdMarca = m.Id
+                    LEFT JOIN CATEGORIAS c ON a.IdCategoria = c.Id");
+
                 datos.EjecutarLectura();
+
                 while (datos.Lector.Read())
                 {
                     Articulos aux = new Articulos();
@@ -28,12 +35,15 @@ namespace Negocio
                     aux.Descripcion = (string)datos.Lector["Descripcion"];
                     aux.Precio = (decimal)datos.Lector["Precio"];
 
+                    // --- Marca ---
                     if (!(datos.Lector["Marca"] is DBNull))
                     {
                         aux.Marca = new Marcas();
                         aux.Marca.Marca = (string)datos.Lector["Marca"];
                         aux.Marca.Id = (int)datos.Lector["IdMarca"];
                     }
+
+                    // --- Categoría ---
                     if (!(datos.Lector["Categoria"] is DBNull))
                     {
                         aux.Categoria = new Categorias();
@@ -41,13 +51,16 @@ namespace Negocio
                         aux.Categoria.Id = (int)datos.Lector["IdCategoria"];
                     }
 
+                    // --- Imágenes ---
+                    aux.Imagenes = ObtenerImagenes(aux.Id);
+
                     lista.Add(aux);
                 }
+
                 return lista;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
             finally
@@ -56,13 +69,45 @@ namespace Negocio
             }
         }
 
+        // 🔹 NUEVO MÉTODO: carga todas las imágenes de un artículo
+        private List<Imagenes> ObtenerImagenes(int idArticulo)
+        {
+            List<Imagenes> lista = new List<Imagenes>();
+            AccesoDatos datos = new AccesoDatos();
+
+            try
+            {
+                datos.SetearConsulta("SELECT Id, ImagenUrl FROM IMAGENES WHERE IdArticulo = @id");
+                datos.SetearParametro("@id", idArticulo);
+                datos.EjecutarLectura();
+
+                while (datos.Lector.Read())
+                {
+                    Imagenes img = new Imagenes();
+                    img.Id = (int)datos.Lector["Id"];
+                    img.ImagenURL = (string)datos.Lector["ImagenUrl"];
+                    lista.Add(img);
+                }
+
+                return lista;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                datos.CerrarConexion();
+            }
+        }
+
+        // 🔹 Dejamos tus otros métodos tal cual
         public void Agregar(Articulos nuevo)
         {
             AccesoDatos datos = new AccesoDatos();
 
             try
             {
-                //datos.SetearConsulta("INSERT INTO ARTICULOS (Codigo, Nombre, Descripcion, Precio, IdMarca, IdCategoria) VALUES ('" + nuevo.Codigo+"', '"+nuevo.Nombre+"', '"+nuevo.Descripcion+"', "+nuevo.Precio+", "+nuevo.Marca.Id+", "+nuevo.Categoria.Id+")");
                 datos.SetearConsulta("INSERT INTO ARTICULOS (Codigo, Nombre, Descripcion, Precio, IdMarca, IdCategoria) VALUES (@codigo, @nombre, @descripcion, @precio, @idMarca, @idCategoria)");
                 datos.SetearParametro("@codigo", nuevo.Codigo);
                 datos.SetearParametro("@nombre", nuevo.Nombre);
@@ -74,7 +119,6 @@ namespace Negocio
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
             finally
@@ -89,7 +133,7 @@ namespace Negocio
 
             try
             {
-                datos.SetearConsulta("UPDATE ARTICULOS set Codigo = @codigo, Nombre = @nombre, Descripcion = @descripcion, IdMarca = @idmarca, IdCategoria =  @idcategoria, Precio = @precio WHERE Id = @id");
+                datos.SetearConsulta("UPDATE ARTICULOS SET Codigo = @codigo, Nombre = @nombre, Descripcion = @descripcion, IdMarca = @idmarca, IdCategoria =  @idcategoria, Precio = @precio WHERE Id = @id");
                 datos.SetearParametro("@id", modificar.Id);
                 datos.SetearParametro("@codigo", modificar.Codigo);
                 datos.SetearParametro("@nombre", modificar.Nombre);
@@ -98,11 +142,9 @@ namespace Negocio
                 datos.SetearParametro("@idmarca", modificar.Marca.Id);
                 datos.SetearParametro("@idcategoria", modificar.Categoria.Id);
                 datos.EjecutarAccion();
-
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
             finally
@@ -117,16 +159,14 @@ namespace Negocio
 
             try
             {
-                datos.SetearConsulta("SELECT Id from ARTICULOS WHERE Codigo = @codigo");
+                datos.SetearConsulta("SELECT Id FROM ARTICULOS WHERE Codigo = @codigo");
                 datos.SetearParametro("@codigo", codArticulo);
                 datos.EjecutarLectura();
                 datos.Lector.Read();
-                return (int)datos.Lector["Id"]; ;
-
+                return (int)datos.Lector["Id"];
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
             finally

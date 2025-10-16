@@ -12,30 +12,46 @@ namespace WebAPI.Controllers
     public class ArticulosController : ApiController
     {
         // GET: api/Articulos
-        public IEnumerable<string> Get()
+        [HttpGet]
+        public IEnumerable<Articulos> Get()
         {
-            return new string[] { "value1", "value2" };
+            ArticulosNegocio negocio = new ArticulosNegocio();
+            return negocio.Listar();  // Devuelve todos los artículos con marca, categoría e imágenes
         }
 
         // GET: api/Articulos/5
-        public string Get(int id)
+        [HttpGet]
+        public IHttpActionResult Get(int id)
         {
-            return "value";
-        }
+            ArticulosNegocio negocio = new ArticulosNegocio();
+            var articulos = negocio.Listar();
+            var articulo = articulos.Find(a => a.Id == id);
 
-        // POST: api/Articulos
-        public void Post([FromBody]string value)
-        {
+            if (articulo == null)
+                return NotFound();
+
+            return Ok(articulo);
         }
 
         // PUT: api/Articulos/5
-        public void Put(int id, [FromBody]string value)
+        [HttpPut]
+        public IHttpActionResult Put(int id, [FromBody] Articulos articulo)
         {
-        }
+            if (articulo == null)
+                return BadRequest("El cuerpo de la solicitud está vacío.");
 
-        // DELETE: api/Articulos/5
-        public void Delete(int id)
-        {
+            articulo.Id = id;
+            ArticulosNegocio negocio = new ArticulosNegocio();
+
+            try
+            {
+                negocio.Modificar(articulo); // 🔹 no devuelve nada
+                return Ok("Artículo actualizado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
     }
 }
