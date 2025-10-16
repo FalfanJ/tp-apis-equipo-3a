@@ -75,5 +75,21 @@ namespace WebAPI.Controllers
             artNeg.Agregar(nuevo);
             return Request.CreateResponse(HttpStatusCode.OK, "Producto agregado.");
         }
+
+        // DELETE api/Articulos/5
+        public IHttpActionResult Delete(int id)
+        {
+            ArticulosNegocio negocio = new ArticulosNegocio();
+
+            try
+            {
+                negocio.EliminarFisico(id);
+                return Ok("Artículo eliminado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
     }
 }

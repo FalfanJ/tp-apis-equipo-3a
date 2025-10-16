@@ -172,5 +172,37 @@ namespace Negocio
                 datos.CerrarConexion();
             }
         }
+
+        public void EliminarFisico(int id)
+        {
+            // ---- Eliminamos la imagen
+            AccesoDatos datosImagenes = new AccesoDatos();
+            try
+            {
+                datosImagenes.SetearConsulta("DELETE FROM IMAGENES WHERE IdArticulo = @id");
+                datosImagenes.SetearParametro("@id", id);
+                datosImagenes.EjecutarAccion();
+            }
+            finally
+            {
+                datosImagenes.CerrarConexion();
+            }
+
+            // Luego de cerrar la conexion eliminamos el articulo
+            AccesoDatos datosArticulo = new AccesoDatos();
+            try
+            {
+                datosArticulo.SetearConsulta("DELETE FROM ARTICULOS WHERE Id = @id");
+                datosArticulo.SetearParametro("@id", id);
+                datosArticulo.EjecutarAccion();
+            }
+            finally
+            {
+                datosArticulo.CerrarConexion();
+            }
+        }
+
     }
+
+
 }
