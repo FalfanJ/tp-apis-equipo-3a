@@ -46,7 +46,7 @@ namespace WebAPI.Controllers
 
             try
             {
-                negocio.Modificar(articulo); 
+                negocio.Modificar(articulo);
                 return Ok("Artículo actualizado correctamente.");
             }
             catch (Exception ex)
@@ -64,16 +64,24 @@ namespace WebAPI.Controllers
 
             if (string.IsNullOrEmpty(art.Codigo))
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Sin ingreso de codigo prodcuto.");
+            try
+            {
+                nuevo.Codigo = art.Codigo;
+                nuevo.Nombre = art.Nombre;
+                nuevo.Descripcion = art.Descripcion;
+                nuevo.Precio = art.Precio;
+                nuevo.Marca.Id = (int)art.IdMarca;
+                nuevo.Categoria.Id = (int)art.IdCategoria;
 
-            nuevo.Codigo = art.Codigo;
-            nuevo.Nombre = art.Nombre;
-            nuevo.Descripcion = art.Descripcion;
-            nuevo.Precio = art.Precio;
-            nuevo.Marca.Id = (int)art.IdMarca;
-            nuevo.Categoria.Id = (int)art.IdCategoria;
+                artNeg.Agregar(nuevo);
+                return Request.CreateResponse(HttpStatusCode.OK, "Producto agregado.");
 
-            artNeg.Agregar(nuevo);
-            return Request.CreateResponse(HttpStatusCode.OK, "Producto agregado.");
+            }
+            catch (Exception)
+            {
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "Error interno");
+            }
         }
 
         // DELETE api/Articulos/5

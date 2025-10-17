@@ -24,24 +24,32 @@ namespace WebAPI.Controllers
         }
 
         // POST: api/Imagenes/5
-        public HttpResponseMessage Post(int id, [FromBody]List<string> urlList)
+        public HttpResponseMessage Post(int id, [FromBody] List<string> urlList)
         {
             ImagenesNegocio imgNeg = new ImagenesNegocio();
-            if(urlList.Count==0)
+            if (urlList.Count == 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Vacio...");
-
-            foreach (string item in urlList)
+            try
             {
-                Imagenes aux = new Imagenes();
-                aux.ImagenURL = item;
-                aux.IdArticulo = id;
-                imgNeg.Agregar(aux);
+                foreach (string item in urlList)
+                {
+                    Imagenes aux = new Imagenes();
+                    aux.ImagenURL = item;
+                    aux.IdArticulo = id;
+                    imgNeg.Agregar(aux);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, "Imagen/es agregadas.");
+
             }
-            return Request.CreateResponse(HttpStatusCode.OK, "Imagen/es agregadas.");
+            catch (Exception)
+            {
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "Error interno");
+            }
         }
 
         // PUT: api/Imagenes/5
-        public void Put(int id, [FromBody]string value)
+        public void Put(int id, [FromBody] string value)
         {
         }
 
